@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <iostream>
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -22,11 +23,22 @@ static float aspectRatio;
 bool wireOn = false;
 bool solidOn = true;
 bool axisOn = true;
-bool pathOn = true;
 bool animOn = false;
 int aniSeconds = 0;
-int roboAniState = 0;
-float tree1X, tree1Y, tree1Z, tree2X, tree2Y, tree2Z, tree3X, tree3Y, tree3Z;
+int aniState = 0;
+
+// Tree Shit //////////////////////////////////////////////////////////////////////
+float tree1X = 10;
+float tree1Y = 1;
+float tree1Z = 5;
+float tree2X = -10;
+float tree2Y = 1;
+float tree2Z = -5;
+float tree3X = -20;
+float tree3Y = 1;
+float tree3Z = 9;
+/////////////////////////////////////////////////////////////////////////////////////
+
 GLfloat rotX = 0;
 GLfloat rotY = 1;
 GLfloat rotZ = 0;
@@ -207,7 +219,7 @@ void DrawSphere(double size)
     DisplaySphere(5);
 }
 
-void Drawbox(double w, double h, double l) {
+void drawBox(double w, double h, double l) {
     glPushMatrix();
     glScalef(w, h, l);
     QuadBox(1, GL_QUADS);
@@ -383,6 +395,7 @@ void drawAxis()
 /////////////////////////////////////////////////////////////////////////////////
 //
 // WE'RE DRAWING THE FUCKING ROBOT NOW WOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+// Also here's the timer func
 //
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -395,7 +408,7 @@ void drawRobot()
     glTranslatef(0, 1.5, 0);
     if (solidOn)
     {
-        Drawbox(1, 2, 1.5);
+        drawBox(1, 2, 1.5);
     }
     if (wireOn)
     {
@@ -407,7 +420,7 @@ void drawRobot()
     glTranslatef(0, 3, -.015);
     if (solidOn)
     {
-        Drawbox(1,1,1);
+        drawBox(1,1,1);
     }
     if (wireOn)
     {
@@ -419,15 +432,15 @@ void drawRobot()
     if (solidOn)
     {
         glTranslatef(0, 0.0, 0.5);
-        glRotatef(LthighAngle, 1, 0, 0);
-        Drawbox(0.5, 1, 0.5);
+        glRotatef(LthighAngle, 0, 0, 1);
+        drawBox(0.5, 1, 0.5);
         glTranslatef(0, -0.5, 0);
-        Drawbox(0.5, 1, 0.5);
+        drawBox(0.5, 1, 0.5);
     }
     if (wireOn)
     {
         glTranslatef(0, 0.0, 0.5);
-        glRotatef(LthighAngle, 1, 0, 0);
+        glRotatef(LthighAngle, 0, 0, 1);
         wireBox(0.5, 1, 0.5);
         glTranslatef(0, -0.5, 0);
         wireBox(0.5, 1, 0.5);
@@ -438,15 +451,15 @@ void drawRobot()
     if (solidOn)
     {
         glTranslatef(0, 0, -0.5);
-        glRotatef(RthighAngle, 1, 0, 0);
-        Drawbox(0.5, 1, 0.5);
+        glRotatef(RthighAngle, 0, 0, 1);
+        drawBox(0.5, 1, 0.5);
         glTranslatef(0, -0.5, 0);
-        Drawbox(0.5, 1, 0.5);
+        drawBox(0.5, 1, 0.5);
     }
     if (wireOn)
     {
         glTranslatef(0, 0, -0.5);
-        glRotatef(RthighAngle, 1, 0, 0);
+        glRotatef(RthighAngle, 0, 0, 1);
         wireBox(0.5, 1, 0.5);
         glTranslatef(0, -0.5, 0);
         wireBox(0.5, 1, 0.5);
@@ -457,15 +470,15 @@ void drawRobot()
     if (solidOn)
     {
         glTranslatef(0, 2, 1);
-        glRotatef(LshoulderAngle, 0, 1, 0);
-        Drawbox(0.5, 1, 0.5);
+        glRotatef(LshoulderAngle, 0, 0, 1);
+        drawBox(0.5, 1, 0.5);
         glTranslatef(0, -0.5, 0);
-        Drawbox(0.5, 1, 0.5);
+        drawBox(0.5, 1, 0.5);
     }
     if (wireOn)
     {
         glTranslatef(0, 2, 1);
-        glRotatef(LshoulderAngle, 0, 1, 0);
+        glRotatef(LshoulderAngle, 0, 0, 1);
         wireBox(0.5, 1, 0.5);
         glTranslatef(0, -0.5, 0);
         wireBox(0.5, 1, 0.5);
@@ -476,15 +489,15 @@ void drawRobot()
     if (solidOn)
     {
         glTranslatef(0, 2, -1);
-        glRotatef(RshoulderAngle, 0, 1, 0);
-        Drawbox(0.5, 1, 0.5);
+        glRotatef(RshoulderAngle, 0, 0, 1);
+        drawBox(0.5, 1, 0.5);
         glTranslatef(0, -0.5, 0);
-        Drawbox(0.5, 1, 0.5);
+        drawBox(0.5, 1, 0.5);
     }
     if (wireOn)
     {
         glTranslatef(0, 2, -1);
-        glRotatef(RshoulderAngle, 0, 1, 0);
+        glRotatef(RshoulderAngle, 0, 0, 1);
         wireBox(0.5, 1, 0.5);
         glTranslatef(0, -0.5, 0);
         wireBox(0.5, 1, 0.5);
@@ -492,6 +505,261 @@ void drawRobot()
     glPopMatrix();
 }
 
+void timer(int v)
+{
+    if (animOn)
+    {
+        if (aniSeconds <= 30 && aniState == 0)
+        {
+            LshoulderAngle += 1;
+            RshoulderAngle -= 1;
+            LthighAngle += 1;
+            RthighAngle -= 1;
+            aniSeconds++;
+            if (aniSeconds >= 30)
+                aniState = 1;
+        }
+        else
+        {
+            LshoulderAngle -= 1;
+            RshoulderAngle += 1;
+            LthighAngle -= 1;
+            RthighAngle += 1;
+            aniSeconds--;
+            if (aniSeconds <= -30)
+                aniState = 0;
+        }
+        // Tree movement
+        if (tree1X < 30)
+        {
+            tree1X += 0.5;
+        }
+        else
+        {
+            tree1X = -30;
+        }
+        if (tree2X < 30)
+        {
+            tree2X += 0.5;
+        }
+        else
+        {
+            tree2X = -30;
+        }
+        if (tree3X < 30)
+        {
+            tree3X += 0.5;
+        }
+        else
+        {
+            tree3X = -30;
+        }
+    }
+    glutPostRedisplay();
+    glutTimerFunc(1000 / 60, timer, v);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////
+//
+// CAN I GET SOME TREES IN THIS PLACE
+//
+/////////////////////////////////////////////////////////////////////////////////
+
+void drawTree1()
+{
+    glColor3f(0.1, 0, 0);
+    glPushMatrix();
+    glTranslatef(tree1X, tree1Y, tree1Z);
+    if (solidOn)
+    {
+        drawBox(1, 4, 1);
+    }
+    if (wireOn)
+    {
+        wireBox(1, 4, 1);
+    }
+    glPopMatrix();
+    //Layer1
+    glColor3f(0, 1, 0);
+    glPushMatrix();
+    glTranslatef(tree1X, 3, tree1Z);
+    if (solidOn)
+    {
+        drawBox(4, 1, 4);
+    }
+    if (wireOn)
+    {
+        wireBox(4, 1, 4);
+    }
+    glPopMatrix();
+    //Layer2
+    glPushMatrix();
+    glTranslatef(tree1X, 4, tree1Z);
+    if (solidOn)
+    {
+        drawBox(3, 1, 3);
+    }
+    if (wireOn)
+    {
+        wireBox(3, 1, 3);
+    }
+    glPopMatrix();
+    //Layer3
+    glPushMatrix();
+    glTranslatef(tree1X, 5, tree1Z);
+    if (solidOn)
+    {
+        drawBox(2, 1, 2);
+    }
+    if (wireOn)
+    {
+        wireBox(2, 1, 2);
+    }
+    glPopMatrix();
+    //Layer4
+    glPushMatrix();
+    glTranslatef(tree1X, 6, tree1Z);
+    if (solidOn)
+    {
+        drawBox(1, 1, 1);
+    }
+    if (wireOn)
+    {
+        wireBox(1, 1, 1);
+    }
+    glPopMatrix();
+}
+
+void drawTree2()
+{
+    glColor3f(0.1, 0, 0);
+    glPushMatrix();
+    glTranslatef(tree2X, tree2Y, tree2Z);
+    if (solidOn)
+    {
+        drawBox(1, 4, 1);
+    }
+    if (wireOn)
+    {
+        wireBox(1, 4, 1);
+    }
+    glPopMatrix();
+    //Layer1
+    glColor3f(0, 1, 0);
+    glPushMatrix();
+    glTranslatef(tree2X, 3, tree2Z);
+    if (solidOn)
+    {
+        drawBox(4, 1, 4);
+    }
+    if (wireOn)
+    {
+        wireBox(4, 1, 4);
+    }
+    glPopMatrix();
+    //Layer2
+    glPushMatrix();
+    glTranslatef(tree2X, 4, tree2Z);
+    if (solidOn)
+    {
+        drawBox(3, 1, 3);
+    }
+    if (wireOn)
+    {
+        wireBox(3, 1, 3);
+    }
+    glPopMatrix();
+    //Layer3
+    glPushMatrix();
+    glTranslatef(tree2X, 5, tree2Z);
+    if (solidOn)
+    {
+        drawBox(2, 1, 2);
+    }
+    if (wireOn)
+    {
+        wireBox(2, 1, 2);
+    }
+    glPopMatrix();
+    //Layer4
+    glPushMatrix();
+    glTranslatef(tree2X, 6, tree2Z);
+    if (solidOn)
+    {
+        drawBox(1, 1, 1);
+    }
+    if (wireOn)
+    {
+        wireBox(1, 1, 1);
+    }
+    glPopMatrix();
+}
+
+void drawTree3()
+{
+    glColor3f(0.1, 0, 0);
+    glPushMatrix();
+    glTranslatef(tree3X, tree3Y, tree3Z);
+    if (solidOn)
+    {
+        drawBox(1, 4, 1);
+    }
+    if (wireOn)
+    {
+        wireBox(1, 4, 1);
+    }
+    glPopMatrix();
+    //Layer1
+    glColor3f(0, 1, 0);
+    glPushMatrix();
+    glTranslatef(tree3X, 3, tree3Z);
+    if (solidOn)
+    {
+        drawBox(4, 1, 4);
+    }
+    if (wireOn)
+    {
+        wireBox(4, 1, 4);
+    }
+    glPopMatrix();
+    //Layer2
+    glPushMatrix();
+    glTranslatef(tree3X, 4, tree3Z);
+    if (solidOn)
+    {
+        drawBox(3, 1, 3);
+    }
+    if (wireOn)
+    {
+        wireBox(3, 1, 3);
+    }
+    glPopMatrix();
+    //Layer3
+    glPushMatrix();
+    glTranslatef(tree3X, 5, tree3Z);
+    if (solidOn)
+    {
+        drawBox(2, 1, 2);
+    }
+    if (wireOn)
+    {
+        wireBox(2, 1, 2);
+    }
+    glPopMatrix();
+    //Layer4
+    glPushMatrix();
+    glTranslatef(tree3X, 6, tree3Z);
+    if (solidOn)
+    {
+        drawBox(1, 1, 1);
+    }
+    if (wireOn)
+    {
+        wireBox(1, 1, 1);
+    }
+    glPopMatrix();
+}
 
 // drawSceneElements() /////////////////////////////////////////////////////////
 //
@@ -518,14 +786,15 @@ void drawSceneElements(void)
     }
 
     drawAxis();
+
+
+    //Robot
+    glPushMatrix();
     drawRobot();
-
-    glEnable(GL_LIGHTING);
-
-    //see documentation for glutSolidTeapot; glutSolidTeapot must be called with 
-    //a different winding set. there is a known 'bug' that results in the 
-    //winding of the teapot to be backwards.
-
+    drawTree1();
+    drawTree2();
+    drawTree3();
+    glPopMatrix();
 }
 
 
@@ -767,17 +1036,27 @@ void normalKeys(unsigned char key, int x, int y)
     }
 }
 
-/*
+
 void procSpecialKey(int key, int xx, int yy)
 {
     float fraction = 0.1f;
     switch (key)
     {
     case GLUT_KEY_LEFT:
-
+        innerCamXYZ.z += fraction;
+        break;
+    case GLUT_KEY_RIGHT:
+        innerCamXYZ.z -= fraction;
+        break;
+    case GLUT_KEY_UP:
+        innerCamXYZ.x -= fraction;
+        break;
+    case GLUT_KEY_DOWN:
+        innerCamXYZ.x += fraction;
+        break;
     }
 }
-*/
+
 
 // main() //////////////////////////////////////////////////////////////////////
 //
@@ -807,9 +1086,11 @@ int main(int argc, char** argv)
     glutSetKeyRepeat(GLUT_KEY_REPEAT_ON);
     glutKeyboardFunc(normalKeys);
     glutDisplayFunc(renderCallback);
+    glutTimerFunc(0, timer, 0);
     glutReshapeFunc(resizeWindow);
     glutMouseFunc(mouseCallback);
     glutMotionFunc(mouseMotion);
+    glutSpecialFunc(procSpecialKey);
 
     //do some basic OpenGL setup
     initScene();
